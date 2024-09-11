@@ -39,6 +39,7 @@ const generateMockData = (constraint: string, device: string, range: string) => 
 
 export default function HealthDataDashboard() {
   const [selectedConstraint, setSelectedConstraint] = useState('')
+  const [constraintOrder, setConstraintOrder] = useState<string[]>([])
   const [graphs, setGraphs] = useState<{
     [key: string]: {
       devices: string[];
@@ -50,6 +51,10 @@ export default function HealthDataDashboard() {
 
   const handleConstraintClick = (constraint: string) => {
     setSelectedConstraint(constraint)
+    setConstraintOrder(prevOrder => {
+      const newOrder = prevOrder.filter(c => c !== constraint)
+      return [constraint, ...newOrder]
+    })
     if (!graphs[constraint]) {
       setGraphs(prev => ({
         ...prev,
@@ -160,11 +165,9 @@ export default function HealthDataDashboard() {
     },
   })
 
-  // Sort graphs to ensure the selected constraint's graph is first
+  // Sort graphs based on the constraintOrder
   const sortedGraphs = Object.entries(graphs).sort(([a], [b]) => {
-    if (a === selectedConstraint) return -1;
-    if (b === selectedConstraint) return 1;
-    return 0;
+    return constraintOrder.indexOf(a) - constraintOrder.indexOf(b)
   });
 
   return (
