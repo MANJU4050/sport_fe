@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CheckIcon } from 'lucide-react'
 import { Line } from 'react-chartjs-2'
 import {
@@ -140,6 +140,7 @@ export default function HealthDataDashboard() {
 
   const getChartOptions = (constraint: string): ChartOptions<'line'> => ({
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       x: {
         title: {
@@ -171,23 +172,25 @@ export default function HealthDataDashboard() {
   });
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Health Data Dashboard</h1>
-      <div className="flex flex-wrap gap-2 mb-4">
-        {constraints.map(constraint => (
-          <button
-            key={constraint}
-            onClick={() => handleConstraintClick(constraint)}
-            className={`px-4 py-2 rounded ${
-              selectedConstraint === constraint ? 'bg-primary text-white bg-gray-700' : 'bg-secondary text-secondary-foreground'
-            }`}
-          >
-            {constraint}
-          </button>
-        ))}
+    <div className="flex flex-col h-screen">
+      <div className="bg-gray-100 p-4 shadow-md">
+        <h1 className="text-2xl font-bold mb-4">Health Data Dashboard</h1>
+        <div className="flex flex-wrap gap-2">
+          {constraints.map(constraint => (
+            <button
+              key={constraint}
+              onClick={() => handleConstraintClick(constraint)}
+              className={`px-4 py-2 rounded ${
+                selectedConstraint === constraint ? 'bg-primary text-white bg-gray-700' : 'bg-secondary text-secondary-foreground'
+              }`}
+            >
+              {constraint}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="flex gap-4">
-        <div className="w-1/4">
+      <div className="flex flex-1 overflow-hidden">
+        <div className="w-1/4 p-4 bg-gray-50 overflow-y-auto">
           <h2 className="text-xl font-semibold mb-2">Smart Devices</h2>
           {filteredDevices.map(device => (
             <div key={device.name} className="flex items-center gap-2 mb-2">
@@ -205,10 +208,10 @@ export default function HealthDataDashboard() {
             </div>
           ))}
         </div>
-        <div className="w-3/4">
+        <div className="w-3/4 p-4 overflow-y-auto">
           {sortedGraphs.length > 0 ? (
             sortedGraphs.map(([constraint, graph]) => (
-              <div key={constraint} className="mb-8">
+              <div key={constraint} className="mb-8  bg-gray-100 p-4 rounded-md">
                 <h3 className="text-lg font-semibold mb-2">
                   {constraint.charAt(0).toUpperCase() + constraint.slice(1)} - {graph.devices.join(', ')}
                 </h3>
@@ -229,7 +232,7 @@ export default function HealthDataDashboard() {
                   ))}
                 </div>
 
-                <div className="bg-card text-card-foreground rounded-lg p-4">
+                <div className="bg-card  text-card-foreground rounded-lg p-4" style={{ height: '400px' }}>
                   <Line options={getChartOptions(constraint)} data={{ labels: graph.labels, datasets: graph.data }} />
                 </div>
               </div>
