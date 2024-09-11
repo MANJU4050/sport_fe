@@ -160,6 +160,13 @@ export default function HealthDataDashboard() {
     },
   })
 
+  // Sort graphs to ensure the selected constraint's graph is first
+  const sortedGraphs = Object.entries(graphs).sort(([a], [b]) => {
+    if (a === selectedConstraint) return -1;
+    if (b === selectedConstraint) return 1;
+    return 0;
+  });
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Health Data Dashboard</h1>
@@ -196,8 +203,8 @@ export default function HealthDataDashboard() {
           ))}
         </div>
         <div className="w-3/4">
-          {Object.keys(graphs).length > 0 ? (
-            Object.entries(graphs).map(([constraint, graph]) => (
+          {sortedGraphs.length > 0 ? (
+            sortedGraphs.map(([constraint, graph]) => (
               <div key={constraint} className="mb-8">
                 <h3 className="text-lg font-semibold mb-2">
                   {constraint.charAt(0).toUpperCase() + constraint.slice(1)} - {graph.devices.join(', ')}
