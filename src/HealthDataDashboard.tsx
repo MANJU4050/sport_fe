@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { CheckIcon } from 'lucide-react'
 import { Line } from 'react-chartjs-2'
 import {
@@ -39,7 +39,6 @@ const generateMockData = (constraint: string, device: string, range: string) => 
 
 export default function HealthDataDashboard() {
   const [selectedConstraint, setSelectedConstraint] = useState('')
-  const [constraintOrder, setConstraintOrder] = useState<string[]>([])
   const [graphs, setGraphs] = useState<{
     [key: string]: {
       devices: string[];
@@ -48,13 +47,10 @@ export default function HealthDataDashboard() {
       labels: string[];
     }
   }>({})
+  const graphRefs = useRef<{[key: string]: React.RefObject<HTMLDivElement>}>({})
 
   const handleConstraintClick = (constraint: string) => {
     setSelectedConstraint(constraint)
-    setConstraintOrder(prevOrder => {
-      const newOrder = prevOrder.filter(c => c !== constraint)
-      return [constraint, ...newOrder]
-    })
     if (!graphs[constraint]) {
       setGraphs(prev => ({
         ...prev,
@@ -65,6 +61,10 @@ export default function HealthDataDashboard() {
           labels: []
         }
       }))
+    }
+    // Scroll to the selected constraint's graph
+    if (graphRefs.current[constraint]) {
+      graphRefs.current[constraint].current?.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
@@ -134,6 +134,10 @@ export default function HealthDataDashboard() {
         timeRange: newRange
       }
     }))
+    // Scroll to the selected constraint's graph
+    if (graphRefs.current[constraint]) {
+      graphRefs.current[constraint].current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }
 
   const filteredDevices = devices.filter(device => device.constraints.includes(selectedConstraint))
@@ -165,11 +169,6 @@ export default function HealthDataDashboard() {
       },
     },
   })
-
-  // Sort graphs based on the constraintOrder
-  const sortedGraphs = Object.entries(graphs).sort(([a], [b]) => {
-    return constraintOrder.indexOf(a) - constraintOrder.indexOf(b)
-  });
 
   return (
     <div className="flex flex-col h-screen">
@@ -209,9 +208,16 @@ export default function HealthDataDashboard() {
           ))}
         </div>
         <div className="w-3/4 p-4 overflow-y-auto">
-          {sortedGraphs.length > 0 ? (
-            sortedGraphs.map(([constraint, graph]) => (
-              <div key={constraint} className="mb-8  bg-gray-100 p-4 rounded-md">
+          {Object.entries(graphs).map(([constraint, graph]) => {
+            if (!graphRefs.current[constraint]) {
+              graphRefs.current[constraint] = React.createRef()
+            }
+            return (
+              <div
+                key={constraint}
+                className={`mb-8 border-2 rounded-lg p-4 ${constraint === selectedConstraint ? 'border-blue-500' : 'border-transparent'}`}
+                ref={graphRefs.current[constraint]}
+              >
                 <h3 className="text-lg font-semibold mb-2">
                   {constraint.charAt(0).toUpperCase() + constraint.slice(1)} - {graph.devices.join(', ')}
                 </h3>
@@ -232,12 +238,13 @@ export default function HealthDataDashboard() {
                   ))}
                 </div>
 
-                <div className="bg-card  text-card-foreground rounded-lg p-4" style={{ height: '400px' }}>
+                <div className="bg-card text-card-foreground rounded-lg p-4" style={{ height: '400px' }}>
                   <Line options={getChartOptions(constraint)} data={{ labels: graph.labels, datasets: graph.data }} />
                 </div>
               </div>
-            ))
-          ) : (
+            )
+          })}
+          {Object.keys(graphs).length === 0 && (
             <p>No data available. Select a constraint and devices to display graphs.</p>
           )}
         </div>

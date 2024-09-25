@@ -1,12 +1,16 @@
-import SignUp from "./Signup"
-import DeveloperPortfolio from "./Portfolio"
+
+import DevPortfolio from "./DevPortfolio"
 import HealthDataDashboard from "./HealthDataDashboard"
+import SleepChart from "./ChartComponent"
 
 const App = () => {
   return (
     // <SignUp />
     // <DeveloperPortfolio />
-    <HealthDataDashboard />
+    // <HealthDataDashboard />
+    // <Portfolio />  
+    // <DevPortfolio />
+    <SleepChart />
   )
 }
 
